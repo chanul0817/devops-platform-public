@@ -22,6 +22,29 @@
 - alert가 resolved되면 resolved notification을 보낸다.
 - 야간 critical alert는 담당자에게 즉시 전달한다.
 
+## Notification Channel
+
+Alertmanager receiver는 `.env`의 webhook 설정으로 생성합니다. 공개 저장소에는 실제 webhook URL을 저장하지 않습니다.
+
+```bash
+ALERT_DISCORD_WEBHOOK_URL=
+# or
+ALERT_SLACK_WEBHOOK_URL=
+```
+
+설정 적용:
+
+```bash
+./ops/configure-alertmanager.sh
+docker compose restart alertmanager
+```
+
+테스트 알림:
+
+```bash
+./ops/send-test-alert.sh
+```
+
 ## Customer Customization
 
 실제 고객사 적용 시 다음 기준을 함께 조정합니다.

@@ -14,6 +14,7 @@
 | Container logs | Docker `json-file` log rotation 적용 |
 | Resource guardrail | 주요 컨테이너에 CPU/memory limit 적용 |
 | Metrics retention | Prometheus 보관 기간을 환경변수로 제어 |
+| Alert delivery | Alertmanager에서 Discord/Slack webhook으로 장애 알림 전송 |
 | Backup | PostgreSQL dump 생성, 비어 있는 백업 방지, retention cleanup |
 | Scheduled backup | systemd timer로 정기 PostgreSQL backup 실행 |
 | Restore | 복구 전 안전 백업, app stop, schema reset, restore, app restart |

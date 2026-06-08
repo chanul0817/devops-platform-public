@@ -26,6 +26,10 @@
     backup_timer_enabled: true
     backup_schedule: "*-*-* 03:00:00"
     backup_randomized_delay_sec: "10m"
+    alert_local_webhook_url: ""
+    alert_discord_webhook_url: ""
+    alert_slack_webhook_url: ""
+    alert_slack_channel: ""
     postgres_user: ""
     postgres_password: ""
     grafana_admin_user: ""
@@ -141,6 +145,20 @@
           POSTGRES_PASSWORD={{ postgres_password }}
           GRAFANA_ADMIN_USER={{ grafana_admin_user }}
           GRAFANA_ADMIN_PASSWORD={{ grafana_admin_password }}
+          ALERT_LOCAL_WEBHOOK_URL={{ alert_local_webhook_url }}
+          ALERT_DISCORD_WEBHOOK_URL={{ alert_discord_webhook_url }}
+          ALERT_SLACK_WEBHOOK_URL={{ alert_slack_webhook_url }}
+          ALERT_SLACK_CHANNEL={{ alert_slack_channel }}
+
+    - name: Configure Alertmanager receiver
+      ansible.builtin.command:
+        cmd: ./ops/configure-alertmanager.sh
+        chdir: "{{ project_dir }}"
+      environment:
+        ENV_FILE: .env
+      become_user: "{{ deploy_user }}"
+      register: alertmanager_config
+      changed_when: "'changed=true' in alertmanager_config.stdout"
 
     - name: Build and start the stack
       ansible.builtin.command:

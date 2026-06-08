@@ -32,6 +32,7 @@
 | Grafana dashboard 확인 |  |
 | Loki에서 애플리케이션 로그 검색 가능 |  |
 | 5xx 또는 app down alert 발생 확인 |  |
+| Discord/Slack 등 외부 알림 채널 수신 확인 |  |
 | alert resolved notification 확인 |  |
 
 ## Backup and Recovery

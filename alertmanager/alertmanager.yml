@@ -2,7 +2,7 @@ global:
   resolve_timeout: 5m
 
 route:
-  receiver: default-webhook
+  receiver: local-webhook
   group_by:
     - alertname
     - service
@@ -11,7 +11,7 @@ route:
   repeat_interval: 3h
 
 receivers:
-  - name: default-webhook
+  - name: local-webhook
     webhook_configs:
       - url: http://host.docker.internal:9099/alerts
         send_resolved: true

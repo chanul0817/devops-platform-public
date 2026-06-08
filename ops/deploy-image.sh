@@ -131,8 +131,13 @@ if ! docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" pull "$APP_SERVICE
   exit 1
 fi
 
+if [ -x ./ops/configure-alertmanager.sh ]; then
+  ENV_FILE="$ENV_FILE" ./ops/configure-alertmanager.sh
+fi
+
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --no-build --remove-orphans
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps
+docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" kill -s HUP alertmanager >/dev/null 2>&1 || true
 
 if run_smoke_test; then
   printf '%s\n' "$IMAGE_TAG" > "${STATE_DIR}/last-successful-app-image"
