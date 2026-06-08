@@ -1,0 +1,174 @@
+---
+- name: Deploy DevOps consulting stack to an on-premise Linux server
+  hosts: onprem
+  become: true
+  gather_facts: true
+
+  vars:
+    project_dir: /opt/devops-consulting-springboot
+    local_project_root: "{{ playbook_dir }}/../.."
+    docker_apt_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' if ansible_architecture in ['aarch64', 'arm64'] else ansible_architecture }}"
+    deploy_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
+    deploy_group: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
+    app_http_port: "8080"
+    app_direct_port: "8081"
+    postgres_port: "5432"
+    observability_bind_addr: "127.0.0.1"
+    grafana_port: "3000"
+    prometheus_port: "9090"
+    alertmanager_port: "9093"
+    loki_port: "3100"
+    prometheus_retention_time: "7d"
+    docker_log_max_size: "10m"
+    docker_log_max_file: "3"
+    backup_retention_days: "7"
+    backup_sync_dir: ""
+    backup_timer_enabled: true
+    backup_schedule: "*-*-* 03:00:00"
+    backup_randomized_delay_sec: "10m"
+    postgres_user: ""
+    postgres_password: ""
+    grafana_admin_user: ""
+    grafana_admin_password: ""
+
+  tasks:
+    - name: Fail when target OS is not Debian family
+      ansible.builtin.fail:
+        msg: "This playbook currently supports Debian/Ubuntu on-premise servers."
+      when: ansible_os_family != "Debian"
+
+    - name: Install base packages for Docker repository
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - git
+          - gnupg
+          - rsync
+        state: present
+        update_cache: true
+
+    - name: Create apt keyring directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Download Docker apt repository key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Add Docker apt repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch={{ docker_apt_arch }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        filename: docker
+        state: present
+        update_cache: true
+
+    - name: Install Docker Engine and Compose plugin
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Ensure Docker service is running
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Allow deploy user to run Docker commands
+      ansible.builtin.user:
+        name: "{{ deploy_user }}"
+        groups: docker
+        append: true
+
+    - name: Verify Docker Compose plugin
+      ansible.builtin.command:
+        cmd: docker compose version
+      changed_when: false
+
+    - name: Create project directory
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: "0755"
+
+    - name: Copy project files to target server
+      ansible.builtin.copy:
+        src: "{{ local_project_root }}/"
+        dest: "{{ project_dir }}/"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: preserve
+
+    - name: Write environment file for on-premise deployment
+      ansible.builtin.copy:
+        dest: "{{ project_dir }}/.env"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: "0600"
+        content: |
+          APP_IMAGE=consulting-orders-api:local
+          HTTP_PORT={{ app_http_port }}
+          APP_PORT={{ app_direct_port }}
+          POSTGRES_PORT={{ postgres_port }}
+          OBSERVABILITY_BIND_ADDR={{ observability_bind_addr }}
+          GRAFANA_PORT={{ grafana_port }}
+          PROMETHEUS_PORT={{ prometheus_port }}
+          ALERTMANAGER_PORT={{ alertmanager_port }}
+          LOKI_PORT={{ loki_port }}
+          PROMETHEUS_RETENTION_TIME={{ prometheus_retention_time }}
+          DOCKER_LOG_MAX_SIZE={{ docker_log_max_size }}
+          DOCKER_LOG_MAX_FILE={{ docker_log_max_file }}
+          BACKUP_RETENTION_DAYS={{ backup_retention_days }}
+          BACKUP_SYNC_DIR={{ backup_sync_dir }}
+          SMOKE_TEST_ATTEMPTS=20
+          SMOKE_TEST_SLEEP_SECONDS=3
+          POSTGRES_USER={{ postgres_user }}
+          POSTGRES_PASSWORD={{ postgres_password }}
+          GRAFANA_ADMIN_USER={{ grafana_admin_user }}
+          GRAFANA_ADMIN_PASSWORD={{ grafana_admin_password }}
+
+    - name: Build and start the stack
+      ansible.builtin.command:
+        cmd: docker compose up -d --build
+        chdir: "{{ project_dir }}"
+      changed_when: true
+
+    - name: Install scheduled PostgreSQL backup timer
+      ansible.builtin.command:
+        cmd: ./ops/install-backup-timer.sh
+        chdir: "{{ project_dir }}"
+      environment:
+        PROJECT_DIR: "{{ project_dir }}"
+        RUN_USER: "{{ deploy_user }}"
+        RUN_GROUP: "{{ deploy_group }}"
+        BACKUP_SCHEDULE: "{{ backup_schedule }}"
+        BACKUP_RANDOMIZED_DELAY_SEC: "{{ backup_randomized_delay_sec }}"
+      register: backup_timer_install
+      changed_when: "'changed=true' in backup_timer_install.stdout"
+      when: backup_timer_enabled | bool
+
+    - name: Show running containers
+      ansible.builtin.command:
+        cmd: docker compose ps
+        chdir: "{{ project_dir }}"
+      register: compose_ps
+      changed_when: false
+
+    - name: Print deployment result
+      ansible.builtin.debug:
+        var: compose_ps.stdout_lines
