@@ -1,0 +1,15 @@
+# Copy this file to vault.yml, fill real values, then encrypt it with Ansible Vault.
+# Never commit vault.yml or real webhook/password values to a public repository.
+
+postgres_user: ""
+postgres_password: ""
+
+grafana_admin_user: ""
+grafana_admin_password: ""
+
+alert_local_webhook_url: ""
+alert_discord_webhook_url: ""
+alert_slack_webhook_url: ""
+alert_slack_channel: ""
+
+backup_sync_dir: ""

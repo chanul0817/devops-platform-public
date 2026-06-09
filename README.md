@@ -72,7 +72,7 @@ On-premise Linux Server
 | Logging | Loki, Promtail |
 | Alerting | Alertmanager |
 | Server Automation | Ansible |
-| Operations | Smoke test, backup/restore scripts, Runbook |
+| Operations | Smoke test, backup/restore scripts, secret management, Runbook |
 | Future Cloud Extension | Terraform, AWS EC2, VPC, Security Group |
 
 ## Local Quick Start
@@ -149,6 +149,7 @@ docs/                Consulting documents and handover materials
 - 온프레미스 서버 배포 자동화
 - 모니터링/로그/알림 구성
 - 백업/복구 절차
+- Ansible Vault 기반 Secret 관리
 - 장애 대응 Runbook
 - 운영 안정화 설정
 - 운영자 인수인계 문서

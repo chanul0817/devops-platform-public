@@ -45,6 +45,15 @@
 | restore 절차 dry-run 완료 |  |
 | 복구 책임자와 연락 채널 확인 |  |
 
+## Secret Management
+
+| Check | Result |
+| --- | --- |
+| `.env`가 Git에 포함되지 않는지 확인 |  |
+| `infra/onprem/vault.yml`이 Git에 포함되지 않는지 확인 |  |
+| Ansible Vault로 DB/Grafana/Webhook secret 주입 확인 |  |
+| 공개 저장소 secret scan 완료 |  |
+
 ## Handover
 
 | Check | Result |

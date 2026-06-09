@@ -11,6 +11,7 @@
 | Recovery | Compose 서비스에 `restart: unless-stopped` 적용 |
 | Deployment | GitHub Actions self-hosted runner로 내부망 배포 |
 | Image delivery | 서버에서 소스 빌드 대신 GHCR image pull |
+| Secret management | Ansible Vault로 운영 비밀값을 주입하고 공개 저장소에는 변수명만 관리 |
 | Container logs | Docker `json-file` log rotation 적용 |
 | Resource guardrail | 주요 컨테이너에 CPU/memory limit 적용 |
 | Metrics retention | Prometheus 보관 기간을 환경변수로 제어 |
@@ -61,7 +62,7 @@ Expected network exposure:
 | Disk failure | Local volumes can be lost | External backup storage, DB replica |
 | Host resource exhaustion | Container limits reduce blast radius | Capacity monitoring, autoscaling |
 | Deployment rollback | Smoke test failure triggers previous image rollback | Blue-Green or canary deployment |
-| Secret management | `.env` based demo config | Ansible Vault, Vault, Secret Manager |
+| Secret management | Ansible Vault based secret injection | Vault or cloud secret manager |
 | TLS | Not configured in this demo | HTTPS reverse proxy and certificate automation |
 
 ## Next Production Steps

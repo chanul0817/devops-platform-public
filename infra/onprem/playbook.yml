@@ -7,6 +7,7 @@
   vars:
     project_dir: /opt/devops-consulting-springboot
     local_project_root: "{{ playbook_dir }}/../.."
+    vault_file: "{{ playbook_dir }}/vault.yml"
     docker_apt_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' if ansible_architecture in ['aarch64', 'arm64'] else ansible_architecture }}"
     deploy_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
     deploy_group: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
@@ -36,6 +37,30 @@
     grafana_admin_password: ""
 
   tasks:
+    - name: Check optional Ansible Vault file
+      ansible.builtin.stat:
+        path: "{{ vault_file }}"
+      register: onprem_vault_file
+      delegate_to: localhost
+      become: false
+
+    - name: Load Ansible Vault variables
+      ansible.builtin.include_vars:
+        file: "{{ vault_file }}"
+      when: onprem_vault_file.stat.exists
+      no_log: true
+
+    - name: Validate required secret values
+      ansible.builtin.assert:
+        that:
+          - postgres_user | length > 0
+          - postgres_password | length > 0
+          - grafana_admin_user | length > 0
+          - grafana_admin_password | length > 0
+        fail_msg: "Create infra/onprem/vault.yml from vault.example.yml, fill real secrets, encrypt it with ansible-vault, then run this playbook with --ask-vault-pass."
+        success_msg: "Required deployment secrets are loaded."
+      no_log: true
+
     - name: Fail when target OS is not Debian family
       ansible.builtin.fail:
         msg: "This playbook currently supports Debian/Ubuntu on-premise servers."
@@ -118,6 +143,11 @@
         group: "{{ deploy_group }}"
         mode: preserve
 
+    - name: Remove local-only Ansible Vault file from target copy
+      ansible.builtin.file:
+        path: "{{ project_dir }}/infra/onprem/vault.yml"
+        state: absent
+
     - name: Write environment file for on-premise deployment
       ansible.builtin.copy:
         dest: "{{ project_dir }}/.env"
@@ -149,6 +179,7 @@
           ALERT_DISCORD_WEBHOOK_URL={{ alert_discord_webhook_url }}
           ALERT_SLACK_WEBHOOK_URL={{ alert_slack_webhook_url }}
           ALERT_SLACK_CHANNEL={{ alert_slack_channel }}
+      no_log: true
 
     - name: Configure Alertmanager receiver
       ansible.builtin.command:
