@@ -11,6 +11,7 @@
     docker_apt_arch: "{{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' if ansible_architecture in ['aarch64', 'arm64'] else ansible_architecture }}"
     deploy_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
     deploy_group: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
+    deploy_home: "{{ '/root' if deploy_user == 'root' else '/home/' ~ deploy_user }}"
     app_image: "consulting-orders-api:local"
     app_http_port: "8080"
     app_direct_port: "8081"
@@ -25,6 +26,15 @@
     docker_log_max_file: "3"
     backup_retention_days: "7"
     backup_sync_dir: ""
+    backup_remote_enabled: "false"
+    backup_remote_host: ""
+    backup_remote_user: ""
+    backup_remote_port: "22"
+    backup_remote_dir: ""
+    backup_remote_ssh_key: ""
+    backup_remote_strict_host_key_checking: "yes"
+    backup_remote_rsync_delete: "false"
+    file_backup_source_dir: ""
     backup_timer_enabled: true
     backup_schedule: "*-*-* 03:00:00"
     backup_randomized_delay_sec: "10m"
@@ -76,6 +86,7 @@
           - curl
           - git
           - gnupg
+          - openssh-client
           - rsync
         state: present
         update_cache: true
@@ -172,6 +183,15 @@
           DOCKER_LOG_MAX_FILE={{ docker_log_max_file }}
           BACKUP_RETENTION_DAYS={{ backup_retention_days }}
           BACKUP_SYNC_DIR={{ backup_sync_dir }}
+          BACKUP_REMOTE_ENABLED={{ backup_remote_enabled }}
+          BACKUP_REMOTE_HOST={{ backup_remote_host }}
+          BACKUP_REMOTE_USER={{ backup_remote_user }}
+          BACKUP_REMOTE_PORT={{ backup_remote_port }}
+          BACKUP_REMOTE_DIR={{ backup_remote_dir }}
+          BACKUP_REMOTE_SSH_KEY={{ backup_remote_ssh_key }}
+          BACKUP_REMOTE_STRICT_HOST_KEY_CHECKING={{ backup_remote_strict_host_key_checking }}
+          BACKUP_REMOTE_RSYNC_DELETE={{ backup_remote_rsync_delete }}
+          FILE_BACKUP_SOURCE_DIR={{ file_backup_source_dir }}
           SMOKE_TEST_ATTEMPTS={{ smoke_test_attempts }}
           SMOKE_TEST_SLEEP_SECONDS={{ smoke_test_sleep_seconds }}
           POSTGRES_USER={{ postgres_user }}
@@ -183,6 +203,40 @@
           ALERT_SLACK_WEBHOOK_URL={{ alert_slack_webhook_url }}
           ALERT_SLACK_CHANNEL={{ alert_slack_channel }}
       no_log: true
+
+    - name: Create ssh directory for backup sync
+      ansible.builtin.file:
+        path: "{{ deploy_home }}/.ssh"
+        state: directory
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: "0700"
+      when:
+        - backup_remote_enabled | lower in ["true", "yes", "1"]
+        - backup_remote_host | length > 0
+
+    - name: Scan backup server host key
+      ansible.builtin.command:
+        cmd: "ssh-keyscan -T 5 -p {{ backup_remote_port }} {{ backup_remote_host }}"
+      register: backup_remote_known_hosts
+      changed_when: false
+      when:
+        - backup_remote_enabled | lower in ["true", "yes", "1"]
+        - backup_remote_host | length > 0
+
+    - name: Trust backup server host key for deploy user
+      ansible.builtin.lineinfile:
+        path: "{{ deploy_home }}/.ssh/known_hosts"
+        line: "{{ item }}"
+        create: true
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: "0644"
+        state: present
+      loop: "{{ backup_remote_known_hosts.stdout_lines }}"
+      when:
+        - backup_remote_enabled | lower in ["true", "yes", "1"]
+        - backup_remote_known_hosts.stdout_lines | length > 0
 
     - name: Configure Alertmanager receiver
       ansible.builtin.command:

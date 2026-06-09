@@ -63,5 +63,9 @@ if [ -n "${BACKUP_SYNC_DIR}" ]; then
   echo "Backup synced: ${BACKUP_SYNC_DIR}/$(basename "${BACKUP_FILE}")"
 fi
 
+if [ -x ./ops/sync-remote-backup.sh ]; then
+  BACKUP_FILE="${BACKUP_FILE}" ./ops/sync-remote-backup.sh "${BACKUP_FILE}"
+fi
+
 echo "Backup created: ${BACKUP_FILE}"
 echo "Retention applied: ${BACKUP_RETENTION_DAYS} days"

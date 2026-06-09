@@ -18,6 +18,7 @@
 | Alert delivery | Alertmanager에서 Discord/Slack webhook으로 장애 알림 전송 |
 | Backup | PostgreSQL dump 생성, 비어 있는 백업 방지, retention cleanup |
 | Scheduled backup | systemd timer로 정기 PostgreSQL backup 실행 |
+| External backup | rsync over SSH로 별도 Backup Server에 DB dump와 업로드 파일 전송 |
 | Restore | 복구 전 안전 백업, app stop, schema reset, restore, app restart |
 | Deployment rollback | 새 이미지 smoke test 실패 시 이전 `APP_IMAGE`로 자동 rollback |
 
@@ -31,6 +32,8 @@
 | `DOCKER_LOG_MAX_FILE` | `3` |
 | `BACKUP_RETENTION_DAYS` | `7` |
 | `BACKUP_SYNC_DIR` | Empty, optional external mount path |
+| `BACKUP_REMOTE_ENABLED` | `false` |
+| `FILE_BACKUP_SOURCE_DIR` | Empty, optional upload directory |
 
 ## Verification Commands
 

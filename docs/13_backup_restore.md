@@ -7,7 +7,7 @@
 | Target | PostgreSQL database |
 | Frequency | Daily for demo, customer-defined for production |
 | Retention | 7 days for demo |
-| Storage | Local backup directory, optional sync directory for NAS/S3/MinIO mount |
+| Storage | Local backup directory, optional mount path, optional Backup Server over SSH |
 | Verification | Restore dry-run before handover |
 
 ## Backup
@@ -29,6 +29,33 @@ BACKUP_RETENTION_DAYS=14 ./ops/backup-postgres.sh
 ```bash
 BACKUP_SYNC_DIR=/mnt/company-backups/devops-platform ./ops/backup-postgres.sh
 ```
+
+## Backup Server Sync
+
+비용이 드는 Object Storage 대신 별도 Linux 서버를 Backup Server로 두고 `rsync over SSH`로 DB dump와 업로드 파일을 전송할 수 있습니다.
+
+```text
+App Server
+  +--> ./backups/orders_*.sql
+  +--> uploaded files directory
+        |
+        v
+Backup Server:/srv/backups/devops-platform
+```
+
+앱 서버 `.env` 또는 Ansible Vault에 다음 값을 설정합니다.
+
+```bash
+BACKUP_REMOTE_ENABLED=true
+BACKUP_REMOTE_HOST=BACKUP_SERVER_HOST
+BACKUP_REMOTE_USER=devopsbackup
+BACKUP_REMOTE_PORT=22
+BACKUP_REMOTE_DIR=/srv/backups/devops-platform
+BACKUP_REMOTE_SSH_KEY=/home/ubuntu/.ssh/devops_backup
+FILE_BACKUP_SOURCE_DIR=/opt/devops-consulting-springboot/uploads
+```
+
+Backup Server 초기 준비는 `infra/backup-server/`의 Ansible playbook으로 수행합니다.
 
 ## Scheduled Backup
 

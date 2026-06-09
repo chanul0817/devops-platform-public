@@ -1,0 +1,76 @@
+---
+- name: Prepare a Linux backup server for rsync over SSH
+  hosts: backup
+  become: true
+  gather_facts: true
+
+  vars:
+    backup_user: devopsbackup
+    backup_root: /srv/backups/devops-platform
+    backup_ssh_public_key: ""
+
+  tasks:
+    - name: Fail when target OS is not Debian family
+      ansible.builtin.fail:
+        msg: "This playbook currently supports Debian/Ubuntu backup servers."
+      when: ansible_os_family != "Debian"
+
+    - name: Install backup server packages
+      ansible.builtin.apt:
+        name:
+          - rsync
+          - openssh-server
+        state: present
+        update_cache: true
+
+    - name: Ensure ssh service is running
+      ansible.builtin.service:
+        name: ssh
+        state: started
+        enabled: true
+
+    - name: Create backup user
+      ansible.builtin.user:
+        name: "{{ backup_user }}"
+        shell: /bin/bash
+        create_home: true
+
+    - name: Create backup directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ backup_user }}"
+        group: "{{ backup_user }}"
+        mode: "0750"
+      loop:
+        - "{{ backup_root }}"
+        - "{{ backup_root }}/db"
+        - "{{ backup_root }}/files"
+        - "{{ backup_root }}/files/current"
+
+    - name: Create ssh directory for backup user
+      ansible.builtin.file:
+        path: "/home/{{ backup_user }}/.ssh"
+        state: directory
+        owner: "{{ backup_user }}"
+        group: "{{ backup_user }}"
+        mode: "0700"
+      when: backup_ssh_public_key | length > 0
+
+    - name: Install app server public key for backup user
+      ansible.builtin.lineinfile:
+        path: "/home/{{ backup_user }}/.ssh/authorized_keys"
+        line: "{{ backup_ssh_public_key }}"
+        create: true
+        owner: "{{ backup_user }}"
+        group: "{{ backup_user }}"
+        mode: "0600"
+        state: present
+      when: backup_ssh_public_key | length > 0
+
+    - name: Print backup server result
+      ansible.builtin.debug:
+        msg:
+          - "Backup root: {{ backup_root }}"
+          - "Backup user: {{ backup_user }}"
+          - "Configure the app server with BACKUP_REMOTE_USER, BACKUP_REMOTE_HOST, BACKUP_REMOTE_DIR, and BACKUP_REMOTE_SSH_KEY."

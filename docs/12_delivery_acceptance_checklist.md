@@ -42,6 +42,8 @@
 | PostgreSQL backup 파일 생성 |  |
 | 정기 백업 timer 활성화 확인 |  |
 | backup 파일 보관 위치 확인 |  |
+| Backup Server로 DB dump 전송 확인 |  |
+| 업로드 파일 외부 백업 동기화 확인 |  |
 | restore 절차 dry-run 완료 |  |
 | 복구 책임자와 연락 채널 확인 |  |
 
