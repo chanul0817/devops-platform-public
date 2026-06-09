@@ -25,6 +25,8 @@ vi vault.yml
 Fill real values:
 
 ```yaml
+app_image: "ghcr.io/<owner>/<image>:<tag>"
+
 postgres_user: ""
 postgres_password: ""
 
@@ -34,6 +36,8 @@ grafana_admin_password: ""
 alert_slack_webhook_url: ""
 alert_slack_channel: ""
 ```
+
+`vault.yml` can also override non-secret runtime values from `.env.example`, such as ports, `BACKUP_SYNC_DIR`, `SMOKE_TEST_ATTEMPTS`, and `APP_IMAGE`. This allows the Ansible playbook to recreate the server `.env` without committing the real `.env` file.
 
 Encrypt it:
 

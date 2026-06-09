@@ -1,6 +1,28 @@
 # Copy this file to vault.yml, fill real values, then encrypt it with Ansible Vault.
 # Never commit vault.yml or real webhook/password values to a public repository.
 
+# APP_IMAGE
+app_image: "consulting-orders-api:local"
+
+# Ports and bind addresses
+app_http_port: "8080"
+app_direct_port: "8081"
+postgres_port: "5432"
+observability_bind_addr: "127.0.0.1"
+grafana_port: "3000"
+prometheus_port: "9090"
+alertmanager_port: "9093"
+loki_port: "3100"
+
+# Runtime retention and guardrails
+prometheus_retention_time: "7d"
+docker_log_max_size: "10m"
+docker_log_max_file: "3"
+backup_retention_days: "7"
+backup_sync_dir: ""
+smoke_test_attempts: "20"
+smoke_test_sleep_seconds: "3"
+
 postgres_user: ""
 postgres_password: ""
 
@@ -11,5 +33,3 @@ alert_local_webhook_url: ""
 alert_discord_webhook_url: ""
 alert_slack_webhook_url: ""
 alert_slack_channel: ""
-
-backup_sync_dir: ""
