@@ -20,7 +20,9 @@
 | Scheduled backup | systemd timer로 정기 PostgreSQL backup 실행 |
 | External backup | rsync over SSH로 별도 Backup Server에 DB dump와 업로드 파일 전송 |
 | Restore | 복구 전 안전 백업, app stop, schema reset, restore, app restart |
+| Restore rehearsal | checkpoint backup, marker insert, restore, smoke test, marker removal 검수 |
 | Deployment rollback | 새 이미지 smoke test 실패 시 이전 `APP_IMAGE`로 자동 rollback |
+| Environment separation | staging/production inventory, vault, deploy directory, GitHub Environment 분리 |
 
 ## Runtime Defaults
 
@@ -34,6 +36,8 @@
 | `BACKUP_SYNC_DIR` | Empty, optional external mount path |
 | `BACKUP_REMOTE_ENABLED` | `false` |
 | `FILE_BACKUP_SOURCE_DIR` | Empty, optional upload directory |
+| `DEPLOY_ENV` | `production` from Ansible vault |
+| `CONTAINER_NAME_PREFIX` | `consulting` |
 
 ## Verification Commands
 
@@ -70,9 +74,6 @@ Expected network exposure:
 
 ## Next Production Steps
 
-1. Move PostgreSQL backups to external storage such as NAS, S3, or MinIO.
-2. Add scheduled backup through systemd timer or cron.
-3. Add HTTPS and domain-based routing.
-4. Move secrets to Ansible Vault or a secret manager.
-5. Split production and staging environments.
-6. Add Blue-Green or canary deployment.
+1. Add HTTPS and domain-based routing.
+2. Add Blue-Green or canary deployment.
+3. Move secrets from Ansible Vault to a dedicated secret manager if customer policy requires it.

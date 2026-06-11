@@ -21,6 +21,7 @@
 | 신규 이미지 태그 교체 배포 가능 |  |
 | 배포 후 smoke test 통과 |  |
 | smoke test 실패 시 이전 이미지 자동 rollback 확인 |  |
+| staging 배포 후 production 승격 절차 확인 |  |
 | 서버 재부팅 후 컨테이너 자동 복구 정책 확인 |  |
 | rollback 절차 문서화 |  |
 
@@ -44,7 +45,7 @@
 | backup 파일 보관 위치 확인 |  |
 | Backup Server로 DB dump 전송 확인 |  |
 | 업로드 파일 외부 백업 동기화 확인 |  |
-| restore 절차 dry-run 완료 |  |
+| restore rehearsal 실행 및 marker 제거 확인 |  |
 | 복구 책임자와 연락 채널 확인 |  |
 
 ## Secret Management
@@ -53,6 +54,7 @@
 | --- | --- |
 | `.env`가 Git에 포함되지 않는지 확인 |  |
 | `infra/onprem/vault.yml`이 Git에 포함되지 않는지 확인 |  |
+| `infra/onprem/vault.yml` Ansible Vault 암호화 확인 |  |
 | Ansible Vault로 DB/Grafana/Webhook secret 주입 확인 |  |
 | 공개 저장소 secret scan 완료 |  |
 

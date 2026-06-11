@@ -2,6 +2,15 @@ name: Deploy to On-premise Server
 
 on:
   workflow_dispatch:
+    inputs:
+      target_environment:
+        description: Target deployment environment
+        required: true
+        default: production
+        type: choice
+        options:
+          - staging
+          - production
   workflow_run:
     workflows:
       - CI
@@ -11,12 +20,11 @@ on:
       - main
 
 concurrency:
-  group: onprem-production-deploy
+  group: onprem-${{ github.event.inputs.target_environment || 'production' }}-deploy
   cancel-in-progress: false
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/consulting-orders-api
-  ONPREM_DEPLOY_DIR: ${{ secrets.ONPREM_DEPLOY_DIR }}
 
 jobs:
   build-and-push:
@@ -64,6 +72,10 @@ jobs:
     runs-on: [self-hosted, Linux, onprem]
     needs: build-and-push
     if: ${{ needs.build-and-push.result == 'success' }}
+    environment: ${{ github.event.inputs.target_environment || 'production' }}
+    env:
+      TARGET_ENVIRONMENT: ${{ github.event.inputs.target_environment || 'production' }}
+      ONPREM_DEPLOY_DIR: ${{ secrets.ONPREM_DEPLOY_DIR }}
     permissions:
       contents: read
       packages: read
@@ -76,6 +88,8 @@ jobs:
       - name: Check deploy runner prerequisites
         run: |
           DEPLOY_DIR="${ONPREM_DEPLOY_DIR:-/opt/devops-consulting-springboot}"
+          echo "Target environment: ${TARGET_ENVIRONMENT}"
+          echo "Deploy directory: ${DEPLOY_DIR}"
 
           command -v rsync
           docker compose version

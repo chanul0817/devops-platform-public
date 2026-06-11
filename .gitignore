@@ -8,7 +8,14 @@ logs/
 .deploy-state/
 backups/
 infra/onprem/vault.yml
+infra/onprem/vault.*.yml
 infra/onprem/*.vault.yml
+!infra/onprem/vault.example.yml
+infra/onprem/inventory.local.ini
+infra/onprem/inventory.staging.ini
+infra/onprem/inventory.production.ini
+!infra/onprem/inventory.example.ini
+!infra/onprem/inventory.*.example.ini
 
 .gradle/
 build/

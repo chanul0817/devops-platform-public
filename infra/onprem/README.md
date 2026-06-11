@@ -40,6 +40,21 @@ vi inventory.ini
 ansible-playbook -i inventory.ini playbook.yml
 ```
 
+운영 비밀값은 `vault.yml`에 작성합니다. 초기 검수 중 평문 `vault.yml`을 사용할 때는 다음처럼 실행합니다.
+
+```bash
+cp vault.example.yml vault.yml
+vi vault.yml
+ansible-playbook -i inventory.ini playbook.yml --ask-pass --ask-become-pass
+```
+
+인수인계 전에는 `vault.yml`을 암호화합니다.
+
+```bash
+ansible-vault encrypt vault.yml
+ansible-playbook -i inventory.ini playbook.yml --ask-pass --ask-become-pass --ask-vault-pass
+```
+
 sudo 비밀번호가 필요한 서버라면 다음처럼 실행합니다.
 
 ```bash

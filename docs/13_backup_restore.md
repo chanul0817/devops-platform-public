@@ -98,7 +98,30 @@ ls -lh backups/
 CONFIRM_RESTORE=yes ./ops/restore-postgres.sh ./backups/orders_YYYYmmdd_HHMMSS.sql
 ```
 
+## Restore Rehearsal
+
+복구 검수는 백업 파일이 실제로 복구 가능한지 확인하는 절차입니다. 이 스크립트는 checkpoint backup을 만들고, marker order를 추가한 뒤, checkpoint backup으로 restore해서 marker가 사라졌는지 확인합니다.
+
+운영 데이터베이스를 되돌리는 작업이므로 고객사 승인 후 실행합니다.
+
+```bash
+./ops/restore-rehearsal.sh --force
+```
+
+자동화에서 실행할 때는 다음처럼 승인 값을 환경 변수로 전달할 수 있습니다.
+
+```bash
+CONFIRM_RESTORE_REHEARSAL=yes ./ops/restore-rehearsal.sh
+```
+
+성공 기준:
+
+1. checkpoint backup 파일이 생성됨
+2. marker order가 restore 전에는 조회됨
+3. restore 후 smoke test가 통과함
+4. marker order가 restore 후에는 조회되지 않음
+
 ## Future Improvement
 
 - backup 암호화
-- 정기 restore rehearsal 자동화
+- staging 환경에서 정기 restore rehearsal 자동화

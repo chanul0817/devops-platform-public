@@ -13,6 +13,9 @@
     deploy_group: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
     deploy_home: "{{ '/root' if deploy_user == 'root' else '/home/' ~ deploy_user }}"
     app_image: "consulting-orders-api:local"
+    deploy_environment: "production"
+    container_name_prefix: "consulting"
+    spring_profiles_active: "prod"
     app_http_port: "8080"
     app_direct_port: "8081"
     postgres_port: "5432"
@@ -170,6 +173,9 @@
         mode: "0600"
         content: |
           APP_IMAGE={{ app_image }}
+          DEPLOY_ENV={{ deploy_environment }}
+          CONTAINER_NAME_PREFIX={{ container_name_prefix }}
+          SPRING_PROFILES_ACTIVE={{ spring_profiles_active }}
           HTTP_PORT={{ app_http_port }}
           APP_PORT={{ app_direct_port }}
           POSTGRES_PORT={{ postgres_port }}

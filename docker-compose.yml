@@ -7,7 +7,7 @@ x-default-logging: &default-logging
 services:
   nginx:
     image: nginx:1.27-alpine
-    container_name: consulting-nginx
+    container_name: ${CONTAINER_NAME_PREFIX:-consulting}-nginx
     restart: unless-stopped
     cpus: "0.25"
     mem_limit: 128m
@@ -26,7 +26,7 @@ services:
     image: ${APP_IMAGE:-consulting-orders-api:local}
     build:
       context: ./app
-    container_name: consulting-springboot-app
+    container_name: ${CONTAINER_NAME_PREFIX:-consulting}-springboot-app
     restart: unless-stopped
     cpus: "1.00"
     mem_limit: 768m
@@ -38,6 +38,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/orders
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?POSTGRES_USER is required}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      DEPLOY_ENV: ${DEPLOY_ENV:-local}
       LOG_FILE: /logs/application.log
     ports:
       - "127.0.0.1:${APP_PORT:-8081}:8080"
@@ -54,7 +56,7 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: consulting-postgres
+    container_name: ${CONTAINER_NAME_PREFIX:-consulting}-postgres
     restart: unless-stopped
     cpus: "1.00"
     mem_limit: 1g
@@ -77,7 +79,7 @@ services:
 
   prometheus:
     image: prom/prometheus:v2.55.1
-    container_name: consulting-prometheus
+    container_name: ${CONTAINER_NAME_PREFIX:-consulting}-prometheus
     restart: unless-stopped
     cpus: "0.50"
     mem_limit: 768m
@@ -103,7 +105,7 @@ services:
 
   grafana:
     image: grafana/grafana:11.4.0
-    container_name: consulting-grafana
+    container_name: ${CONTAINER_NAME_PREFIX:-consulting}-grafana
     restart: unless-stopped
     cpus: "0.50"
     mem_limit: 512m
@@ -128,7 +130,7 @@ services:
 
   loki:
     image: grafana/loki:3.3.2
-    container_name: consulting-loki
+    container_name: ${CONTAINER_NAME_PREFIX:-consulting}-loki
     restart: unless-stopped
     cpus: "0.50"
     mem_limit: 512m
@@ -144,7 +146,7 @@ services:
 
   promtail:
     image: grafana/promtail:3.3.2
-    container_name: consulting-promtail
+    container_name: ${CONTAINER_NAME_PREFIX:-consulting}-promtail
     restart: unless-stopped
     cpus: "0.25"
     mem_limit: 128m
@@ -163,7 +165,7 @@ services:
 
   alertmanager:
     image: prom/alertmanager:v0.28.0
-    container_name: consulting-alertmanager
+    container_name: ${CONTAINER_NAME_PREFIX:-consulting}-alertmanager
     restart: unless-stopped
     cpus: "0.25"
     mem_limit: 128m

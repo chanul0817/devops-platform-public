@@ -49,6 +49,8 @@ systemctl status actions.runner.<owner>-<repo>.<runner-name>.service
 - `12_delivery_acceptance_checklist.md`: 납품 검수 체크리스트
 - `13_backup_restore.md`: 백업/복구 절차
 - `14_operations_hardening.md`: 운영 안정화와 남은 한계
+- `15_secret_management.md`: 비밀값 관리와 Vault 암호화 절차
+- `16_environment_strategy.md`: staging/production 분리 전략
 
 ## Next Steps
 
@@ -56,5 +58,4 @@ systemctl status actions.runner.<owner>-<repo>.<runner-name>.service
 - HTTPS와 도메인 적용
 - AWS EC2 확장
 - RDS 분리
-- 운영/스테이징 환경 분리
 - Argo CD와 Kubernetes 기반 GitOps 확장

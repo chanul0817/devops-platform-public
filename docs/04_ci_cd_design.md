@@ -73,12 +73,16 @@ smoke test
 
 | Secret | Description |
 | --- | --- |
-| `ONPREM_DEPLOY_DIR` | 선택값, 기본값 `/opt/devops-consulting-springboot` |
+| `ONPREM_DEPLOY_DIR` | GitHub Environment별 배포 디렉터리. 예: staging은 `/opt/devops-consulting-springboot-staging`, production은 `/opt/devops-consulting-springboot` |
+
+## Staging and Production
+
+`workflow_dispatch` 실행 시 `staging` 또는 `production`을 선택할 수 있습니다. GitHub Environments를 사용해 환경별 `ONPREM_DEPLOY_DIR` secret과 승인 정책을 분리합니다.
+
+Ansible 배포 설정은 `docs/16_environment_strategy.md`에 정리된 것처럼 환경별 inventory/vault 파일을 분리합니다.
 
 ## Future Improvement
 
-- 운영/스테이징 환경 분리
-- GitHub Environments로 배포 승인자 지정
 - Blue-Green 또는 Rolling deployment
 - AWS EC2 배포 workflow 활성화
 - Argo CD 기반 GitOps 배포

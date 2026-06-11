@@ -3,6 +3,9 @@
 
 # APP_IMAGE
 app_image: "consulting-orders-api:local"
+deploy_environment: "production"
+container_name_prefix: "consulting"
+spring_profiles_active: "prod"
 
 # Ports and bind addresses
 app_http_port: "8080"
