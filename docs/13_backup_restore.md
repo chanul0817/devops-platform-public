@@ -51,11 +51,23 @@ BACKUP_REMOTE_HOST=BACKUP_SERVER_HOST
 BACKUP_REMOTE_USER=devopsbackup
 BACKUP_REMOTE_PORT=22
 BACKUP_REMOTE_DIR=/srv/backups/devops-platform
-BACKUP_REMOTE_SSH_KEY=/home/ubuntu/.ssh/devops_backup
+BACKUP_REMOTE_SSH_KEY=/path/to/backup_private_key
 FILE_BACKUP_SOURCE_DIR=/opt/devops-consulting-springboot/uploads
 ```
 
 Backup Server 초기 준비는 `infra/backup-server/`의 Ansible playbook으로 수행합니다.
+
+파일 백업 경로가 설정되어 있으면 Ansible이 해당 디렉터리를 생성합니다. 실제 검수에서는 헬스체크 스크립트가 `.backup-healthcheck` sentinel 파일을 만들고, 백업 서버의 `files/current/`까지 동기화되는지 확인합니다.
+
+```bash
+./ops/check-backup-health.sh
+```
+
+성공 기준:
+
+1. 로컬 DB dump 파일이 비어 있지 않음
+2. 백업 서버 `db/` 경로에 동일한 dump 파일이 존재함
+3. 파일 백업 경로가 설정된 경우 백업 서버 `files/current/.backup-healthcheck`가 존재함
 
 ## Scheduled Backup
 
@@ -73,6 +85,12 @@ systemctl list-timers devops-postgres-backup.timer
 sudo systemctl start devops-postgres-backup.service
 sudo journalctl -u devops-postgres-backup.service -n 50 --no-pager
 ls -lh backups/
+```
+
+정기 백업 서비스에는 실패 알림이 연결됩니다. `devops-postgres-backup.service`가 실패하면 `devops-postgres-backup-failure-alert.service`가 Alertmanager로 `PostgreSQLBackupFailed` 알림을 보냅니다.
+
+```bash
+systemctl status devops-postgres-backup-failure-alert.service --no-pager
 ```
 
 ## Restore

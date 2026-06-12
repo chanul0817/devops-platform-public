@@ -19,6 +19,8 @@
 | Backup | PostgreSQL dump 생성, 비어 있는 백업 방지, retention cleanup |
 | Scheduled backup | systemd timer로 정기 PostgreSQL backup 실행 |
 | External backup | rsync over SSH로 별도 Backup Server에 DB dump와 업로드 파일 전송 |
+| Backup health check | 로컬/원격 DB dump와 파일 백업 sentinel 검증 |
+| Backup failure alert | systemd `OnFailure`로 Alertmanager에 백업 실패 알림 전송 |
 | Restore | 복구 전 안전 백업, app stop, schema reset, restore, app restart |
 | Restore rehearsal | checkpoint backup, marker insert, restore, smoke test, marker removal 검수 |
 | Deployment rollback | 새 이미지 smoke test 실패 시 이전 `APP_IMAGE`로 자동 rollback |

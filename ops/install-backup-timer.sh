@@ -14,12 +14,14 @@ RUN_USER="${RUN_USER:-}"
 RUN_GROUP="${RUN_GROUP:-}"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 TIMER_FILE="/etc/systemd/system/${SERVICE_NAME}.timer"
+ALERT_SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}-failure-alert.service"
 SERVICE_TMP="$(mktemp)"
 TIMER_TMP="$(mktemp)"
+ALERT_SERVICE_TMP="$(mktemp)"
 changed=false
 
 cleanup() {
-  rm -f "${SERVICE_TMP}" "${TIMER_TMP}"
+  rm -f "${SERVICE_TMP}" "${TIMER_TMP}" "${ALERT_SERVICE_TMP}"
 }
 trap cleanup EXIT INT TERM
 
@@ -30,6 +32,11 @@ fi
 
 if [ ! -x "${PROJECT_DIR}/ops/backup-postgres.sh" ]; then
   echo "Backup script is missing or not executable: ${PROJECT_DIR}/ops/backup-postgres.sh" >&2
+  exit 1
+fi
+
+if [ ! -x "${PROJECT_DIR}/ops/notify-backup-failure.sh" ]; then
+  echo "Backup failure notification script is missing or not executable: ${PROJECT_DIR}/ops/notify-backup-failure.sh" >&2
   exit 1
 fi
 
@@ -46,6 +53,7 @@ cat > "${SERVICE_TMP}" <<EOF
 Description=DevOps platform PostgreSQL backup
 Wants=docker.service
 After=docker.service
+OnFailure=${SERVICE_NAME}-failure-alert.service
 
 [Service]
 Type=oneshot
@@ -73,8 +81,27 @@ RandomizedDelaySec=${BACKUP_RANDOMIZED_DELAY_SEC}
 WantedBy=timers.target
 EOF
 
+cat > "${ALERT_SERVICE_TMP}" <<EOF
+[Unit]
+Description=Send alert when DevOps platform PostgreSQL backup fails
+
+[Service]
+Type=oneshot
+User=${RUN_USER}
+Group=${RUN_GROUP}
+WorkingDirectory=${PROJECT_DIR}
+Environment=ENV_FILE=.env
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=${PROJECT_DIR}/ops/notify-backup-failure.sh ${SERVICE_NAME}.service
+EOF
+
 if ! cmp -s "${SERVICE_TMP}" "${SERVICE_FILE}" 2>/dev/null; then
   install -m 0644 "${SERVICE_TMP}" "${SERVICE_FILE}"
+  changed=true
+fi
+
+if ! cmp -s "${ALERT_SERVICE_TMP}" "${ALERT_SERVICE_FILE}" 2>/dev/null; then
+  install -m 0644 "${ALERT_SERVICE_TMP}" "${ALERT_SERVICE_FILE}"
   changed=true
 fi
 

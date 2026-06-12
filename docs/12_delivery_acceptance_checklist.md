@@ -45,6 +45,8 @@
 | backup 파일 보관 위치 확인 |  |
 | Backup Server로 DB dump 전송 확인 |  |
 | 업로드 파일 외부 백업 동기화 확인 |  |
+| backup health check 통과 확인 |  |
+| backup 실패 시 Alertmanager 알림 발생 확인 |  |
 | restore rehearsal 실행 및 marker 제거 확인 |  |
 | 복구 책임자와 연락 채널 확인 |  |
 

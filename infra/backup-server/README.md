@@ -37,7 +37,7 @@ backup_remote_host: "BACKUP_SERVER_HOST"
 backup_remote_user: "devopsbackup"
 backup_remote_port: "22"
 backup_remote_dir: "/srv/backups/devops-platform"
-backup_remote_ssh_key: "/home/ubuntu/.ssh/devops_backup"
+backup_remote_ssh_key: "/path/to/backup_private_key"
 file_backup_source_dir: "/opt/devops-consulting-springboot/uploads"
 ```
 

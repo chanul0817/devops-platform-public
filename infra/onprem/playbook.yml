@@ -165,6 +165,15 @@
         path: "{{ project_dir }}/infra/onprem/vault.yml"
         state: absent
 
+    - name: Create file backup source directory
+      ansible.builtin.file:
+        path: "{{ file_backup_source_dir }}"
+        state: directory
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: "0750"
+      when: file_backup_source_dir | length > 0
+
     - name: Write environment file for on-premise deployment
       ansible.builtin.copy:
         dest: "{{ project_dir }}/.env"
