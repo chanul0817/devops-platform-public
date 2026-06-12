@@ -18,6 +18,10 @@ infra/onprem/inventory.staging.ini
 infra/onprem/inventory.production.ini
 !infra/onprem/inventory.example.ini
 !infra/onprem/inventory.*.example.ini
+infra/backup-server/inventory.ini
+infra/backup-server/inventory.*.ini
+!infra/backup-server/inventory.example.ini
+!infra/backup-server/inventory.*.example.ini
 
 .gradle/
 build/

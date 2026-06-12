@@ -1,6 +1,6 @@
-# Backup Server
+# Backup / Standby Server
 
-This directory prepares a separate Linux backup server for PostgreSQL dump files and uploaded files.
+This directory prepares a separate Linux backup server for PostgreSQL dump files and uploaded files. It can also prepare the same server to become a PostgreSQL standby server.
 
 The app server pushes backup artifacts to this server using `rsync` over SSH.
 
@@ -27,6 +27,22 @@ ansible-playbook -i inventory.ini playbook.yml \
   -e "backup_ssh_public_key='PASTE_APP_SERVER_PUBLIC_KEY'"
 ```
 
+To prepare the server for the PostgreSQL standby phase, enable Docker setup:
+
+```bash
+ansible-playbook -i inventory.ini playbook.yml \
+  -e "backup_ssh_public_key='PASTE_APP_SERVER_PUBLIC_KEY'" \
+  -e "standby_enabled=true"
+```
+
+Validate the standby server base:
+
+```bash
+docker --version
+docker compose version
+ls -ld /opt/devops-postgres-standby
+```
+
 ## App Server Settings
 
 Set these values through `infra/onprem/vault.yml`:
@@ -46,3 +62,7 @@ Then run the on-premise playbook and test:
 ```bash
 ./ops/backup-postgres.sh
 ```
+
+## Standby Extension
+
+The standby phase adds PostgreSQL streaming replication on this server. This playbook only prepares Docker and the standby work directory first. Replication setup is performed after verifying SSH connectivity from the standby server to the primary server.
